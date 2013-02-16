@@ -17,11 +17,12 @@
 # along with Aqueduct.  If not, see <http://www.gnu.org/licenses/>.
 
 import headers
+from AqueductDriver import AqueductDriver
 
-class AqueductDriver(object):
+class AqueductLatexDriver(AqueductDriver):
     """
-    AqueductDriver how a AqueductFSM writes output. This is a default driver,
-    it returns a XML code. Not very usefull, but good for debug
+    AqueductLatexDriver is designed to return a LaTeX
+    output based on "screenplay" environment
     """
 
     def __init__(self):
@@ -74,11 +75,11 @@ class AqueductDriver(object):
         """
         Uses breakpage to define a format-specific break page
         """
-        self.output.append("<br/>")
+        self.output.append("\\")
 
     # CloseDocument
     def CloseDocument(self):
         """
         Appends closing statements
         """
-        self.output.append("</screenplay>")
+        self.output.append("\end")

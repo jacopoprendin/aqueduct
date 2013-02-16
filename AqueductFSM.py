@@ -182,8 +182,9 @@ key-value at line %d instead of %s""")%(index,line))
                 self.driver.OpenDialogueForCharacter(line)
 
             # new scene title?
-            elif (line[0:7]=='SCENE: '):
+            elif (line[0]=='#'):
                 self.current_state=self.SCENE_TITLE
+                self.AddSceneTitle(line)
 
             # new scene header?
             elif (self.__isSceneHeader(line)):

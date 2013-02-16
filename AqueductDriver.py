@@ -54,9 +54,8 @@ class AqueductDriver(object):
     def OpenDialogueForCharacter(self,character):
         self.output.append(('<say w="%s">\n')%(character,))
 
-    def OpenSceneTitle(self,line):
-        self.output.append("<scene>\n")
-        self.output.append(line)
+    def AddSceneTitle(self,line):
+        self.output.append(("<scene>%s</scene>\n")%(line,))
 
     def CloseDescription(self):
         self.output.append("\n</description>\n")

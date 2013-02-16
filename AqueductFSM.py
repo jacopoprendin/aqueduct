@@ -1,11 +1,29 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+# Written by Jacopo Prendin (nidnerp@gmail.com)
+# This file is part of Aqueduct.
+# Aqueduct is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# Aqueduct is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with Aqueduct.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 import headers
 
+from AqueductDriver import AqueductDriver
+
 def DebugPrint(string):
     print string
+
 
 class AqueductFSMException(Exception):
     pass
@@ -29,7 +47,11 @@ class AqueductFSM(object):
     DIALOGUE=10
 
     # init
-    def __init__(self):
+    def __init__(self,driver):
+        """
+        Creates a new AqueductFSM which uses a AqueductDriver to
+        write output
+        """
         self.current_state=self.TITLE_TITLE
         self.header_text=headers.xml
         self.head_dictionary={
@@ -40,23 +62,8 @@ class AqueductFSM(object):
             'Contact':'email, address, ecc.',
             }
 
-        self.output=[]
+        self.driver=driver
         self.scene_number=1
-
-    # AddTitlePage
-    def AddTitlePage(self):
-        """
-        Adds title page to header, using a format-string for
-        header
-
-        @param a format string for current output mode
-        """
-        self.output.append(self.header_text%\
-                               (self.head_dictionary['Draft date'],
-                                self.head_dictionary['Title'],
-                                self.head_dictionary['Source'],
-                                self.head_dictionary['Author'],
-                                self.head_dictionary['Contact']))
 
     # __TitleSet
     def __TitleSet(self,key,value,index):
@@ -81,6 +88,9 @@ class AqueductFSM(object):
         
         @param line line to analize
         """
+        if (line=="\n"):
+            return False
+        
         k=line[0:3]
         s=line[4]
         if ((k=='INT' and (s=='.' or s==' ')) or\
@@ -104,6 +114,11 @@ class AqueductFSM(object):
         @param index is current line index
         """
 
+        # if line is not just a new-line character, remove
+        # the new-line character
+        if (line!="\n"):
+            line=line[:-1]
+            
         # title_* state
         if (self.current_state==self.TITLE_TITLE or\
                 self.current_state==self.TITLE_AUTHOR or\
@@ -111,9 +126,7 @@ class AqueductFSM(object):
                 self.current_state==self.TITLE_SOURCE or\
                 self.current_state==self.TITLE_CONTACT):
             if (line=='\n'):
-                DebugPrint("Passo a Probable title end")
                 self.current_state=self.PROBABLE_TITLE_END
-                return
             # we have text. it MUST be a title key/value
             else:
                 kw=line.split(':')
@@ -124,35 +137,38 @@ key-value at line %d instead of %s""")%(index,line))
                 # line ok: let's parse it
                 else:
                     self.__TitleSet(kw[0],kw[1],index)
-                    return
 
         # Probable title end
         elif (self.current_state==self.PROBABLE_TITLE_END):
             # if we have another \n, then title page
             # is over. Write title page and close
             if (line=='\n'):
-                self.AddTitlePage()
-                self.AddPageBreak()
-                self.current_state=self.SCENE_TITLE
-                self.OpenSceneTitle(line)
-                return
+                self.driver.AddTitlePage(self.head_dictionary)
+                self.driver.AddPageBreak()
+
+                # have a scene title or a scene description?
+                if (line[0:4]=='Scene'):
+                    self.current_state=self.SCENE_TITLE
+                    self.driver.OpenSceneTitle(line)
+                else:
+                    self.current_state=self.SCENE_HEADER
+                    self.driver.OpenSceneHeader(line)
         
         # scene title: this isn't part of fountain's definition. It's
         # something I use to easily organize my work (JaK)
         elif (self.current_state==self.SCENE_TITLE):
             # empty new line: go to scene header
             if (self.__isSceneHeader(line)):
-                self.CloseSceneTitle()
-                self.OpenSceneHeader(line)
+                self.driver.CloseSceneTitle()
+                self.driver.OpenSceneHeader(line)
                 self.current_state=self.SCENE_HEADER
-                return
 
         # scene header
         elif (self.current_state==self.SCENE_HEADER):
             self.current_state=self.DESCRIPTION
-            self.CloseSceneHeader()
-            self.OpenDescription(line)
-            return 
+            self.driver.CloseSceneHeader()
+            self.driver.OpenDescription()
+            self.driver.output.append(line)
 
         # Description state
         elif (self.current_state==self.DESCRIPTION):
@@ -161,88 +177,61 @@ key-value at line %d instead of %s""")%(index,line))
             # pass to description if current line is a 
             # full-uppercase string
             if (line.isupper()):
-                self.CloseDescription()
                 self.current_state=self.DIALOGUE
-                self.OpenDialogueForCharacter(line)
-                return
+                self.driver.CloseDescription()
+                self.driver.OpenDialogueForCharacter(line)
 
             # new scene title?
             elif (line[0:7]=='SCENE: '):
                 self.current_state=self.SCENE_TITLE
-                return
 
             # new scene header?
             elif (self.__isSceneHeader(line)):
-                self.OpenSceneHeader(line)
+                self.driver.OpenSceneHeader(line)
                 self.current_state=self.SCENE_HEADER
-
             else:
-                DebugPrint("Aggiungo riga")
-                self.output.append(line)
+                self.driver.output.append(line)
 
         # dialogue state
         elif (self.current_state==self.DIALOGUE):
             # a empty line means "description!"
             if (line=='\n'):
-                self.CloseDialogue()
                 self.current_state=self.DESCRIPTION
-                self.OpenDescription(line)
+                self.driver.CloseDialogue()
+                self.driver.OpenDescription()
                 return
             else:
-                self.output.append(line)
+                self.driver.output.append(line)
 
         # else... add a line to current state
         else:
             raise AqueductFSMException("Unknown state")
 
-    # OPEN/CLOSE Methods
-    def OpenDescription(self,line):
-        self.output.append("<description>\n")
-        self.output.append(line)
+    # CloseDocument
+    def CloseDocument(self):
+        if (self.current_state==self.DESCRIPTION):
+            self.driver.CloseDescription()
+        elif (self.current_state==self.DIALOGUE):
+            self.driver.CloseDialogue()
+        else:
+            raise AqueductFSMException("Unknow state on closing")
 
-    def OpenSceneHeader(self,line):
-        self.output.append("<scene_header>\n")
-        self.output.append(line)
-
-    def OpenDialogueForCharacter(self,character):
-        self.output.append(('<say w="%s">\n')%(character,))
-
-    def OpenSceneTitle(self,line):
-        self.output.append("<scene>\n")
-        self.output.append(line)
-
-    def CloseDescription(self):
-        self.output.append("</description>\n")
-
-    def CloseSceneHeader(self):
-        self.output.append("</scene_header>\n")
-
-    def CloseDialogue(self):
-        self.output.append("</say>\n")
-
-    def CloseSceneTitle(self):
-        self.output.append("</scene>\n")
-
-
-    # AddPageBreak
-    def AddPageBreak(self):
-        """
-        Uses breakpage to define a format-specific break page
-        """
-        self.output.append("<br/>")
-
+        self.driver.CloseDocument()
 ################################# UNIT TEST #################################
 if (__name__=='__main__'):
-    afsm=AqueductFSM()
+    driver=AqueductDriver()
+    afsm=AqueductFSM(driver)
     
-    x=file("/home/jprendin/personal/StoriaDiUnaCampana.txt")
+    x=file("test_script.funtain")
 
     lines=x.readlines()
     
     for index in range(0,len(lines)):
         afsm.ParseLine(lines[index],index)
 
+    afsm.CloseDocument()
+    
     x.close()
     y=file("Test.xml",'w')
-    y.writelines(afsm.output)
+    y.writelines(driver.output)
     y.close()

@@ -7,7 +7,7 @@ A python program to convert screenplay written in Fountain markup language (http
 
 From command line
 
-aqueduct.py <inputfile.funtain>
+aqueduct.py inputfile.funtain
 
 It will print on standard output result XML
 

@@ -88,7 +88,7 @@ class AqueductFSM(object):
         
         @param line line to analize
         """
-        if (line=="\n"):
+        if (line=="\n" or len(line)<5):
             return False
         
         k=line[0:3]
@@ -147,21 +147,29 @@ key-value at line %d instead of %s""")%(index,line))
                 self.driver.AddPageBreak()
 
                 # have a scene title or a scene description?
-                if (line[0:4]=='Scene'):
+                if (line[0]=='#' or line=='\n'):
                     self.current_state=self.SCENE_TITLE
-                    self.driver.OpenSceneTitle(line)
-                else:
+                    self.driver.AddSceneTitle(line)
+
+                elif (self.__isSceneHeader(line)):
                     self.current_state=self.SCENE_HEADER
                     self.driver.OpenSceneHeader(line)
+
+                else:
+                    raise AqueductFSMException((
+                """Unknow transition from PROBABLE_TITLE_END state with line <%s>""")%
+                        (line,))
         
         # scene title: this isn't part of fountain's definition. It's
         # something I use to easily organize my work (JaK)
         elif (self.current_state==self.SCENE_TITLE):
             # empty new line: go to scene header
             if (self.__isSceneHeader(line)):
-                self.driver.CloseSceneTitle()
                 self.driver.OpenSceneHeader(line)
                 self.current_state=self.SCENE_HEADER
+
+            elif (line=='\n'):
+                self.current_state=self.DESCRIPTION
 
         # scene header
         elif (self.current_state==self.SCENE_HEADER):
@@ -184,7 +192,7 @@ key-value at line %d instead of %s""")%(index,line))
             # new scene title?
             elif (line[0]=='#'):
                 self.current_state=self.SCENE_TITLE
-                self.AddSceneTitle(line)
+                self.driver.AddSceneTitle(line)
 
             # new scene header?
             elif (self.__isSceneHeader(line)):
@@ -215,7 +223,7 @@ key-value at line %d instead of %s""")%(index,line))
         elif (self.current_state==self.DIALOGUE):
             self.driver.CloseDialogue()
         else:
-            raise AqueductFSMException("Unknow state on closing")
+            raise AqueductFSMException( ("Unknow state on closing: %d")%(self.current_state,))
 
         self.driver.CloseDocument()
 ################################# UNIT TEST #################################

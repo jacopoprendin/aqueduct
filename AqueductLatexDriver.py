@@ -52,10 +52,10 @@ class AqueductLatexDriver(AqueductDriver):
         self.output.append(line)
 
     def OpenDialogueForCharacter(self,character):
-        self.output.append("begin{dialogue}{%s}\n"%(character,))
+        self.output.append("\\begin{dialogue}{%s}\n"%(character,))
 
-    def AddSceneTitle(self,line):
-        self.output.append(("\chapter{%s}\n")%(line,))
+    def AddSceneTitle(self,title):
+        self.output.append(("\n\chapter{%s}\n")%(title,))
 
     def CloseDescription(self):
         self.output.append("\\\\\n")
@@ -64,7 +64,7 @@ class AqueductLatexDriver(AqueductDriver):
         self.output.append("\n")
 
     def CloseDialogue(self):
-        self.output.append("\nend{dialogue}\n")
+        self.output.append("\n\\end{dialogue}\n")
 
     def CloseSceneTitle(self):
         self.output.append("\n")

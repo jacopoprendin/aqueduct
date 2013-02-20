@@ -67,7 +67,7 @@ latex="""
 
 %% ... preamble finished, let's go ...
 \\begin{document}
-
+\\newcommand{\\chapter}[1]{\\large{#1}
 %% Make a title page ...
 \\coverpage
 

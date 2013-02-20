@@ -149,7 +149,9 @@ key-value at line %d instead of %s""")%(index,line))
                 # have a scene title or a scene description?
                 if (line[0]=='#' or line=='\n'):
                     self.current_state=self.SCENE_TITLE
-                    self.driver.AddSceneTitle(line)
+                    self.scene_number+=1
+                    title=(("Scene %d: %s")%(self.scene_number,line[:-1]))
+                    self.driver.AddSceneTitle(title)
 
                 elif (self.__isSceneHeader(line)):
                     self.current_state=self.SCENE_HEADER

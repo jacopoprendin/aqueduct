@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-# Written by Jacopo Prendin (nidnerp@gmail.com)
+# Written by Jacopo Prendin (nidnerpREPLACEWITHANICEATCHARACTERgmail.com)
 # This file is part of Aqueduct.
 # Aqueduct is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

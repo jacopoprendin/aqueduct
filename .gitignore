@@ -10,6 +10,12 @@ bin-release/
 # Mac OS X
 .DS_Store
 
+# fountain files
+.fountain
+
+# logs
+.log
+
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
 # should NOT be excluded as they contain compiler settings and other important
 # information for Eclipse / Flash Builder.

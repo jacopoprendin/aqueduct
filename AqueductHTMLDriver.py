@@ -55,6 +55,7 @@ class AqueductHTMLDriver(object):
         self.output.append(('<div class="dialogue"><div class="character">%s</div>\n')%(character,))
 
     def AddSceneTitle(self,line):
+        print "HTMLDriver: Apro la scena titolata "+line
         self.output.append(("<h3>%s</h3>\n")%(line,))
 
     def CloseDescription(self):

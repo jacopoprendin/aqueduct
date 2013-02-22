@@ -63,7 +63,7 @@ class AqueductFSM(object):
             }
 
         self.driver=driver
-        self.scene_number=1
+        self.scene_number=0
 
     # __TitleSet
     def __TitleSet(self,key,value,index):
@@ -100,11 +100,17 @@ class AqueductFSM(object):
                 (k=='I/E' and (s=='.' or s==' ')) or\
                 (line[0:7]=='INT./EXT') or\
                 (line[0:6]=='INT./EXT') ):
+            self.scene_number+=1
             return True
         else:
             return False
 
-
+    def __OpenSceneTitle(self,line):
+        self.current_state=self.SCENE_TITLE
+        temp_scene_number=self.scene_number+1
+        scene_title=(("Scene %d: %s")%(temp_scene_number,line.replace("#","")))
+        self.driver.AddSceneTitle(scene_title)
+        
     # ParseLine
     def ParseLine(self,line,index):
         """
@@ -147,16 +153,17 @@ key-value at line %d instead of %s""")%(index,line))
                 self.driver.AddPageBreak()
 
                 # have a scene title or a scene description?
-                if (line[0]=='#' or line=='\n'):
-                    self.current_state=self.SCENE_TITLE
-                    self.scene_number+=1
-                    title=(("Scene %d: %s")%(self.scene_number,line[:-1]))
-                    self.driver.AddSceneTitle(title)
+                if (line[0]=='#'):
+                    self.__OpenSceneTitle(line)
 
                 elif (self.__isSceneHeader(line)):
                     self.current_state=self.SCENE_HEADER
                     self.driver.OpenSceneHeader(line)
 
+                # ignore empty lines
+                elif (line[0]=='\n'):
+                    self.current_state=self.DESCRIPTION
+                    return
                 else:
                     raise AqueductFSMException((
                 """Unknow transition from PROBABLE_TITLE_END state with line <%s>""")%
@@ -193,8 +200,7 @@ key-value at line %d instead of %s""")%(index,line))
 
             # new scene title?
             elif (line[0]=='#'):
-                self.current_state=self.SCENE_TITLE
-                self.driver.AddSceneTitle(line)
+                self.__OpenSceneTitle(line)
 
             # new scene header?
             elif (self.__isSceneHeader(line)):
@@ -211,6 +217,10 @@ key-value at line %d instead of %s""")%(index,line))
                 self.driver.CloseDialogue()
                 self.driver.OpenDescription()
                 return
+
+            elif (line[0]=='#'):
+                self.__OpenSceneTitle(line)
+                
             else:
                 self.driver.output.append(line)
 

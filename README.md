@@ -1,17 +1,18 @@
-aqueduct
+Aqueduct
 ========
-
-A python program to convert screenplay written in Fountain markup language (http://http://fountain.io/) into XML, LaTeX or XML.
+Aqueduct is a python program designed to convert screenplays written in Fountain markup language (http://fountain.io/) into XML, LaTeX or XML. Other Formats can be implemented creating new AqueductDrivers.
 
 ### Usage
-
 From command line
 
-aqueduct.py inputfile.funtain
+aqueduct.py <inputfile.funtain> <output format>
 
 It will print on standard output result XML
 
-### Near to be ready functions
+### Supported Formats
++ XML (format=xml)
++ LaTeX (format=latex)
++ HTML print-friendly (format=html)
 
-- LaTeX screenplay output
-- HTML output
+### Notes
+Test as much you can. Report bugs. Aqueduct is free under GPL v3 license.

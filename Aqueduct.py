@@ -20,19 +20,32 @@ import sys
 
 from AqueductFSM import AqueductFSM
 from AqueductLatexDriver import AqueductLatexDriver
-
+from AqueductHTMLDriver import AqueductHTMLDriver
 # ************************************************************
 #                           MAIN()
 # ************************************************************
 if (__name__=='__main__'):
+    if (len(sys.argv)<3):
+        print "Usage: Aqueduct.py <filename> <format>"
+        sys.exit(1)
+
+    driver=None
     screenplay_file=file(sys.argv[1])
     screenplay_type=sys.argv[2]
-    
+
+    # set choosed driver
+    if (screenplay_type=='html'):
+        driver=AqueductHTMLDriver()
+    elif (screenplay_type=='latex'):
+        driver=AqueductLatexDriver()
+    else:
+        driver=AqueductDriver()
+
+    afsm=AqueductFSM(driver)
+
     lines=screenplay_file.readlines()
 
-    driver=AqueductLatexDriver()
-    afsm=AqueductFSM(driver)
-    
+    # for each line, FiniteStateMachine analize it
     for index in range(0,len(lines)):
         afsm.ParseLine(lines[index],index)
 
@@ -40,7 +53,12 @@ if (__name__=='__main__'):
     
     screenplay_file.close()
 
-    output_filename=sys.argv[1].replace('fountain','tex')
+    # create output file
+    if (sys.argv[1].find('fountain')>=0):
+        output_filename=sys.argv[1].replace('fountain',screenplay_type)
+    else:
+        output_filename=sys.argv[1]+"."+screenplay_type
+        
     y=file(output_filename,'w')
     y.writelines(driver.output)
     y.close()

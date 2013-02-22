@@ -60,13 +60,18 @@ html="""<html>
     {
     text-align:center;
     }
+
+    h3{
+    page-break-before: always;
+    }
   </style>
 
 </head>
 <body>
 
-<div class="date">%s</date>
+<div class="date">%s</div>
 <h1>%s</h1>
+<p>%s</p>
 <p>by %s<br>
 %s
 </p>

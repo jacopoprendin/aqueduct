@@ -5,7 +5,7 @@ Aqueduct is a python program designed to convert screenplays written in Fountain
 ### Usage
 From command line
 
-    aqueduct.py &lt;inputfile.funtain&gt; &lt;output format&gt;
+    aqueduct.py <inputfile.funtain> <output format>
 
 It will print on standard output result XML
 

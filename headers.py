@@ -40,8 +40,9 @@ html="""<html>
     body
     {
     width:210mm;
-    font-size:12px;
+    font-size:12pt;
     font-family:Courier New, Monospace;
+    padding:20mm;
     }
     
     div.description

@@ -77,9 +77,16 @@ class AqueductLatexDriver(AqueductDriver):
         """
         self.output.append("\\")
 
+    # AddNewLine
+    def AddNewLine(self):
+        """
+        Force a new lines
+        """
+        self.output.append("\\")
+
     # CloseDocument
     def CloseDocument(self):
         """
         Appends closing statements
         """
-        self.output.append("\end")
+        self.output.append("\end{document}")

@@ -45,6 +45,7 @@ class AqueductFSM(object):
     SCENE_HEADER=8
     DESCRIPTION=9
     DIALOGUE=10
+    #DIALOGUE_MODE=11
 
     # init
     def __init__(self,driver):
@@ -223,6 +224,11 @@ key-value at line %d instead of %s""")%(index,line))
                 
             else:
                 self.driver.output.append(line)
+                # if there's a closed parenthesis, force a new line because
+                # it's how character is talking
+                if (line.find(")")>0):
+                    self.driver.AddNewLine()
+
 
         # else... add a line to current state
         else:

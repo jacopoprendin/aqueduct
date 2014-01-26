@@ -77,6 +77,13 @@ class AqueductDriver(object):
         """
         self.output.append("<br/>")
 
+    # AddNewLine
+    def AddNewLine(self):
+        """
+        Force a new lines
+        """
+        self.output.append("<br/>")
+        
     # CloseDocument
     def CloseDocument(self):
         """
